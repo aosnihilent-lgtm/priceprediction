@@ -1,0 +1,892 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title> QuoteSmart Price Recommendation</title>
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --card: #ffffff;
+      --border: #d7d9df;
+      --text: #171a21;
+      --muted: #6f7682;
+      --primary: #0f1727;
+      --accent: #c82b35;
+      --soft-accent: #fdecee;
+      --ok: #138a4f;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Arial", sans-serif;
+      background: radial-gradient(circle at top right, #ffffff 0%, var(--bg) 45%, #eceff3 100%);
+      color: var(--text);
+      padding: 16px;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      display: grid;
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(16, 23, 39, 0.08);
+    }
+
+    .header {
+      padding: 22px 24px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      font-size: 11px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 40px;
+      line-height: 1.1;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #1c2434;
+    }
+
+    .subtitle {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .section {
+      padding: 18px 24px 2px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 14px;
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      font-size: 12px;
+    }
+
+    .section-title::before {
+      content: "";
+      width: 4px;
+      height: 16px;
+      border-radius: 2px;
+      background: var(--accent);
+      display: inline-block;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .field label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      font-weight: 700;
+      color: #2e3440;
+    }
+
+    .field input {
+      width: 100%;
+      border: 1px solid #c8ccd4;
+      border-radius: 6px;
+      font-size: 14px;
+      padding: 10px 11px;
+      outline: none;
+      background: #fff;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .field input:focus {
+      border-color: #9fa8b8;
+      box-shadow: 0 0 0 3px rgba(55, 65, 81, 0.12);
+    }
+
+    .btn-wrap {
+      padding: 8px 24px 24px;
+    }
+
+    .btn {
+      border: 0;
+      width: 100%;
+      background: linear-gradient(90deg, #111827, #0f172a 52%, #111827);
+      color: #fff;
+      border-radius: 9px;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 14px 16px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      letter-spacing: .01em;
+    }
+
+    .btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .result-header {
+      background: linear-gradient(115deg, #111827 0%, #0f172a 60%, #141e33 100%);
+      color: #f8fafc;
+      padding: 14px 16px;
+      border-bottom: 1px solid #21293c;
+    }
+
+    .result-header h2 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .result-header p {
+      margin: 2px 0 0;
+      font-size: 12px;
+      color: #aeb7c8;
+    }
+
+    .result-body {
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .hero {
+      border: 1px solid #f0b5bd;
+      background: linear-gradient(180deg, #fef8f9 0%, var(--soft-accent) 100%);
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .hero .label {
+      color: var(--accent);
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: .09em;
+      margin-bottom: 4px;
+    }
+
+    .hero .price {
+      font-size: 42px;
+      line-height: 1.1;
+      margin: 0;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .delta {
+      margin-top: 4px;
+      color: #c2303d;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .prob {
+      text-align: right;
+      min-width: 145px;
+    }
+
+    .prob .title {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .prob .num {
+      margin: 0;
+      font-size: 40px;
+      line-height: 1;
+      font-weight: 800;
+      color: #141821;
+    }
+
+    .bar {
+      margin-top: 8px;
+      height: 6px;
+      border-radius: 999px;
+      background: #dee4eb;
+      overflow: hidden;
+    }
+
+    .bar > span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, #16a34a, #1e8f52);
+      width: 0;
+      transition: width .4s ease;
+    }
+
+    .current-block {
+      border: 1px solid #d5dae2;
+      background: #f7f9fc;
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .result-top-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .slider-wrap {
+      border: 1px solid #d6dbe4;
+      border-radius: 8px;
+      background: #f9fafb;
+      padding: 10px;
+      margin-top: 6px;
+    }
+
+    .slider-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+      font-size: 12px;
+      color: #475467;
+      font-weight: 600;
+    }
+
+    .slider-wrap input[type="range"] {
+      width: 100%;
+      accent-color: #c82b35;
+      cursor: pointer;
+    }
+
+    .inline {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: baseline;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .block-title {
+      margin: 4px 0 10px;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: 11px;
+      color: #6b7280;
+      font-weight: 800;
+    }
+
+    .triplet {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .tile {
+      border: 1px solid #d9dde4;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      background: #fff;
+      position: relative;
+    }
+
+    .tile.mid {
+      border-color: #ed9ea6;
+      background: #fff6f7;
+    }
+
+    .badge {
+      position: absolute;
+      top: -9px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent);
+      color: #fff;
+      border-radius: 999px;
+      font-size: 10px;
+      letter-spacing: .04em;
+      font-weight: 700;
+      padding: 1px 7px;
+      text-transform: uppercase;
+    }
+
+    .tile .name {
+      color: #6b7280;
+      font-size: 13px;
+      margin-top: 3px;
+    }
+
+    .tile .val {
+      font-weight: 800;
+      font-size: 32px;
+      line-height: 1;
+      margin: 6px 0;
+      letter-spacing: -0.02em;
+    }
+
+    .range {
+      margin-top: 10px;
+    }
+
+    .range .labels {
+      display: flex;
+      justify-content: space-between;
+      color: #6b7280;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .range-track {
+      height: 8px;
+      border-radius: 999px;
+      background: #f0c6cb;
+      position: relative;
+    }
+
+    .range-track::after {
+      content: "";
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      border: 2px solid #fff;
+      background: var(--accent);
+      position: absolute;
+      top: 50%;
+      left: var(--marker, 50%);
+      transform: translate(-50%, -50%);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
+    }
+
+    .range-note {
+      text-align: center;
+      font-size: 12px;
+      color: #666e7b;
+      margin-top: 4px;
+    }
+
+    .analytics {
+      margin-top: 4px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .chart-card {
+      border: 1px solid #d7dce5;
+      border-radius: 10px;
+      background: #fbfcfe;
+      padding: 12px;
+    }
+
+    .chart-title {
+      margin: 0 0 10px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #4b5563;
+      font-weight: 800;
+    }
+
+    .prob-row {
+      display: grid;
+      grid-template-columns: 74px 1fr 52px;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+
+    .prob-track {
+      background: #e4e9f0;
+      border-radius: 999px;
+      overflow: hidden;
+      height: 8px;
+    }
+
+    .prob-fill {
+      height: 100%;
+      width: 0;
+      transition: width .35s ease;
+      background: linear-gradient(90deg, #1f7a3f, #28a058);
+    }
+
+    #pricePositionChart {
+      width: 100%;
+      height: 180px;
+      display: block;
+      background: linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+      border: 1px solid #e2e7f0;
+      border-radius: 8px;
+    }
+
+    .hidden { display: none; }
+
+    .msg {
+      font-size: 13px;
+      color: #b42318;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 900px) {
+      h1 { font-size: 34px; }
+      .hero .price, .prob .num, .tile .val { font-size: 30px; }
+    }
+
+    @media (max-width: 700px) {
+      .grid, .triplet { grid-template-columns: 1fr; }
+      .hero { flex-direction: column; align-items: flex-start; }
+      .result-top-grid { grid-template-columns: 1fr; }
+      .analytics { grid-template-columns: 1fr; }
+      .prob { text-align: left; width: 100%; min-width: 0; }
+      .container { gap: 14px; }
+      body { padding: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="card">
+      <div class="header">
+        <div class="chip">✧ Nihilent AI-Powered</div>
+        <h1> QuoteSmart Price Recommendation</h1>
+        <p class="subtitle">Enter product and pricing details to receive an intelligent price recommendation.</p>
+      </div>
+
+      <form id="recommendationForm">
+        <div class="section">
+          <h3 class="section-title">Customer & Product Info</h3>
+          <div class="grid">
+            <div class="field"><label for="SALESORG">Sales Org</label><input id="SALESORG" value="1000" required /></div>
+            <div class="field"><label for="SOLDTO">Sold To</label><input id="SOLDTO" value="1441961" required /></div>
+            <div class="field"><label for="ZIPCODE">Zip Code</label><input id="ZIPCODE" value="10001" required /></div>
+            <div class="field"><label for="CURRENCY">Curruncy</label><input id="CURRENCY" value="USD" required /></div>
+            <div class="field"><label for="MATERIALNO">Material No</label><input id="MATERIALNO" value="100113748" required /></div>
+            <div class="field"><label for="BASEMODEL">Base Model</label><input id="BASEMODEL" value="PVG62-50S40-NVS" required /></div>
+            <div class="field"><label for="MATGROUP1">Material Group 1</label><input id="MATGROUP1" value="F8" required /></div>
+            <div class="field"><label for="MATGRP2">Material Group 2</label><input id="MATGRP2" value="" placeholder="Optional" /></div>
+            <div class="field"><label for="PRODUCTHIERARCHY">Product Hierarchy</label><input id="PRODUCTHIERARCHY" value="001001001001" required /></div>
+            <div class="field"><label for="SALESOFFICE">Sales Office</label><input id="SALESOFFICE" value="1000" required /></div>
+            <div class="field"><label for="COMPETITORCODE">Competitor Code</label><input id="COMPETITORCODE" value="600000" required /></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3 class="section-title">Pricing Details</h3>
+          <div class="grid">
+            <div class="field"><label for="QUANTITY">Quantity</label><input id="QUANTITY" type="number" step="0.01" value="1000.00" required /></div>
+            
+            <div class="field"><label for="PERUNITCOST">Per Unit Cost ($)</label><input id="PERUNITCOST" type="number" step="0.01" value="512.00" required /></div>
+            <div class="field"><label for="STDINVOICEPRICE">Std Invoice Price ($)</label><input id="STDINVOICEPRICE" type="number" step="0.01" value="1612.00" required /></div>
+            <div class="field"><label for="PERUNITQUOTEPRICE">Current Quote Price ($)</label><input id="PERUNITQUOTEPRICE" type="number" step="0.01" value="1500.00" required /></div>
+            <div class="field"><label for="COMPETITORPRICE">Competitor Price ($)</label><input id="COMPETITORPRICE" type="number" step="0.01" value="1420.00" required /></div>
+          </div>
+          <div class="slider-wrap">
+            <div class="slider-head">
+              <span>Current Quote Slider</span>
+              <strong id="quoteSliderValue">$ 1,500.00</strong>
+            </div>
+            <input id="quoteSlider" type="range" min="512" max="1612" step="0.01" value="1500" />
+          </div>
+        </div>
+
+        <div class="btn-wrap">
+          <button class="btn" id="submitBtn" type="submit">
+            <span>⚕ Get Smart Recommendation</span>
+            <span>➜</span>
+          </button>
+          <div id="message" class="msg hidden"></div>
+        </div>
+      </form>
+    </section>
+
+    <section class="card hidden" id="resultCard">
+      <div class="result-header">
+        <h2>Recommendation Result</h2>
+        <p>AI-powered pricing analysis</p>
+      </div>
+      <div class="result-body">
+        <div class="result-top-grid">
+          <div class="hero">
+            <div>
+              <div class="label">Best Recommended Price</div>
+              <p class="price" id="bestPrice">$ 0.00</p>
+              <div class="delta" id="deltaNote">$ 0.00 (0.0%) vs current quote</div>
+            </div>
+            <div class="prob">
+              <div class="title">Win Probability</div>
+              <p class="num" id="bestProb">0.0%</p>
+              <div class="bar"><span id="bestProbBar"></span></div>
+            </div>
+          </div>
+
+          <div class="current-block">
+            <div class="inline">
+              <strong>Current Quote Win Probability</strong>
+              <strong id="currentProb">0.0%</strong>
+            </div>
+            <div class="bar"><span id="currentProbBar"></span></div>
+            <div class="small" id="currentPriceNote">At $ 0.00 - your current quote price</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="block-title">Price Range Analysis</div>
+          <div class="triplet">
+            <div class="tile">
+              <div class="name">Min Price</div>
+              <div class="val" id="minPrice">$ 0.00</div>
+              <div class="small" id="minStatus">-</div>
+            </div>
+            <div class="tile mid">
+              <div class="badge">MID</div>
+              <div class="name">Mid Price</div>
+              <div class="val" id="midPrice">$ 0.00</div>
+              <div class="small" id="midStatus">-</div>
+            </div>
+            <div class="tile">
+              <div class="name">Max Price</div>
+              <div class="val" id="maxPrice">$ 0.00</div>
+              <div class="small" id="maxStatus">-</div>
+            </div>
+          </div>
+          <div class="range">
+            <div class="labels">
+              <span id="minLabel">$ 0.00</span>
+              <span id="maxLabel">$ 0.00</span>
+            </div>
+            <div class="range-track" id="rangeTrack"></div>
+            <div class="range-note" id="bestRangeNote">Best price at $ 0.00</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="block-title">Analytics</div>
+          <div class="analytics">
+            <div class="chart-card">
+              <h4 class="chart-title">Win Probability by Scenario</h4>
+              <div class="prob-row">
+                <strong>Best</strong>
+                <div class="prob-track"><div id="aBestProb" class="prob-fill"></div></div>
+                <span id="aBestProbTxt">0%</span>
+              </div>
+              <div class="prob-row">
+                <strong>Current</strong>
+                <div class="prob-track"><div id="aCurrentProb" class="prob-fill"></div></div>
+                <span id="aCurrentProbTxt">0%</span>
+              </div>
+              <div class="prob-row">
+                <strong>Max</strong>
+                <div class="prob-track"><div id="aMaxProb" class="prob-fill"></div></div>
+                <span id="aMaxProbTxt">0%</span>
+              </div>
+              <div class="prob-row">
+                <strong>Mid</strong>
+                <div class="prob-track"><div id="aMidProb" class="prob-fill"></div></div>
+                <span id="aMidProbTxt">0%</span>
+              </div>
+              <div class="prob-row">
+                <strong>Min</strong>
+                <div class="prob-track"><div id="aMinProb" class="prob-fill"></div></div>
+                <span id="aMinProbTxt">0%</span>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <h4 class="chart-title">Price Position Overview</h4>
+              <svg id="pricePositionChart" viewBox="0 0 500 180" preserveAspectRatio="none"></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const form = document.getElementById("recommendationForm");
+    const submitBtn = document.getElementById("submitBtn");
+    const msg = document.getElementById("message");
+    const resultCard = document.getElementById("resultCard");
+    const quoteInput = document.getElementById("PERUNITQUOTEPRICE");
+    const quoteSlider = document.getElementById("quoteSlider");
+    const quoteSliderValue = document.getElementById("quoteSliderValue");
+
+    const numberFields = [
+      "QUANTITY",
+      "PERUNITCOST",
+      "STDINVOICEPRICE",
+      "PERUNITQUOTEPRICE",
+      "COMPETITORPRICE"
+    ];
+
+    function currency(n) {
+      const value = Number(n || 0);
+      return "$ " + value.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function percentage(n) {
+      return `${Number(n || 0).toFixed(2)}%`;
+    }
+
+    function payloadFromForm() {
+      const payload = {
+        SALESORG: document.getElementById("SALESORG").value.trim(),
+        SOLDTO: document.getElementById("SOLDTO").value.trim(),
+        ZIPCODE: document.getElementById("ZIPCODE").value.trim(),
+        MATERIALNO: document.getElementById("MATERIALNO").value.trim(),
+        BASEMODEL: document.getElementById("BASEMODEL").value.trim(),
+        MATGROUP1: document.getElementById("MATGROUP1").value.trim(),
+        CURRENCY: document.getElementById("CURRENCY").value.trim(),
+        MATGRP2: document.getElementById("MATGRP2").value.trim(),
+        PRODUCTHIERARCHY: document.getElementById("PRODUCTHIERARCHY").value.trim(),
+        SALESOFFICE: document.getElementById("SALESOFFICE").value.trim(),
+        COMPETITORCODE: document.getElementById("COMPETITORCODE").value.trim()
+      };
+
+      numberFields.forEach((key) => {
+        payload[key] = Number(document.getElementById(key).value || 0);
+      });
+
+      return payload;
+    }
+
+    function updateQuoteSliderBounds() {
+      const min = Number(document.getElementById("PERUNITCOST").value || 0);
+      const max = Number(document.getElementById("STDINVOICEPRICE").value || 0);
+      const lo = Math.min(min, max);
+      const hi = Math.max(min, max);
+      quoteSlider.min = String(lo);
+      quoteSlider.max = String(hi || lo + 1);
+      syncSliderDisplay(Number(quoteInput.value || lo), false);
+    }
+
+    function syncSliderDisplay(value, clamp = true) {
+      const min = Number(quoteSlider.min);
+      const max = Number(quoteSlider.max);
+      let v = Number(value || 0);
+      if (clamp) v = Math.max(min, Math.min(max, v));
+      quoteInput.value = String(v.toFixed(2));
+      quoteSlider.value = String(v);
+      quoteSliderValue.textContent = currency(v);
+    }
+
+    function setBar(id, percent) {
+      document.getElementById(id).style.width = `${Math.max(0, Math.min(100, Number(percent || 0)))}%`;
+    }
+
+    function setAnalyticsProbBar(fillId, textId, value) {
+      const v = Math.max(0, Math.min(100, Number(value || 0)));
+      document.getElementById(fillId).style.width = `${v}%`;
+      document.getElementById(textId).textContent = `${v.toFixed(2)}%`;
+    }
+
+    function drawPricePositionChart(points) {
+      const svg = document.getElementById("pricePositionChart");
+      const width = 500;
+      const height = 180;
+      const pad = { l: 44, r: 12, t: 16, b: 30 };
+      const xMin = Math.min(...points.map((p) => p.price));
+      const xMax = Math.max(...points.map((p) => p.price));
+      const yMin = 0;
+      const yMax = Math.max(100, ...points.map((p) => p.prob + 6));
+
+      const x = (v) => {
+        if (xMax === xMin) return width / 2;
+        return pad.l + ((v - xMin) / (xMax - xMin)) * (width - pad.l - pad.r);
+      };
+      const y = (v) => pad.t + ((yMax - v) / (yMax - yMin)) * (height - pad.t - pad.b);
+
+      const xAxisY = y(0);
+      const yAxisX = x(xMin);
+
+      const labels = points.map((p) => {
+        const px = x(p.price);
+        const py = y(p.prob);
+        return `
+          <line x1="${px}" y1="${xAxisY}" x2="${px}" y2="${py}" stroke="#e4a0a8" stroke-dasharray="2 3" />
+          <circle cx="${px}" cy="${py}" r="4.5" fill="${p.color}" />
+          <text x="${px}" y="${py - 8}" text-anchor="middle" font-size="10" font-weight="700" fill="#2f3542">${p.name}</text>
+          <text x="${px}" y="${xAxisY + 14}" text-anchor="middle" font-size="10" fill="#6b7280">${p.price.toFixed(0)}</text>
+        `;
+      }).join("");
+
+      const best = points.find((p) => p.name === "Best");
+      const summary = best ? `Best: ${best.price.toFixed(2)} | ${best.prob.toFixed(2)}%` : "";
+
+      svg.innerHTML = `
+        <rect x="0" y="0" width="${width}" height="${height}" fill="transparent"></rect>
+        <line x1="${pad.l}" y1="${xAxisY}" x2="${width - pad.r}" y2="${xAxisY}" stroke="#cfd5df" />
+        <line x1="${yAxisX}" y1="${pad.t}" x2="${yAxisX}" y2="${xAxisY}" stroke="#cfd5df" />
+        <text x="${pad.l}" y="12" font-size="10" fill="#6b7280">Win Probability (%) vs Price</text>
+        <text x="${pad.l}" y="${height - 8}" font-size="10" fill="#6b7280">${summary}</text>
+        ${labels}
+      `;
+    }
+
+    function bindResponse(apiResponse, inputPayload) {
+      const d = (apiResponse && apiResponse.data) || {};
+
+      const best = Number(d.Best_Price || 0);
+      const currentQuote = Number(d.Current_Quote_Price || inputPayload.PERUNITQUOTEPRICE || 0);
+      const min = Number(d.Min_Price || 0);
+      const mid = Number(d.Mid_Price || 0);
+      const max = Number(d.Max_Price || 0);
+
+      const diff = best - currentQuote;
+      const pct = currentQuote ? (diff / currentQuote) * 100 : 0;
+      const sign = diff > 0 ? "+" : "";
+
+      document.getElementById("bestPrice").textContent = currency(best);
+      document.getElementById("bestProb").textContent = percentage(d.Best_Price_Probability);
+      document.getElementById("deltaNote").textContent =
+        `${sign}${currency(diff)} (${sign}${pct.toFixed(1)}%) vs current quote`;
+
+      document.getElementById("currentProb").textContent = percentage(d.Current_Quote_Probability || d.Win_Probability );
+      document.getElementById("currentPriceNote").textContent =
+        `At ${currency(currentQuote)} - your current quote price`;
+
+      document.getElementById("minPrice").textContent = currency(min);
+      document.getElementById("midPrice").textContent = currency(mid);
+      document.getElementById("maxPrice").textContent = currency(max);
+      document.getElementById("minStatus").textContent = d.Min_Price_Status || "-";
+      document.getElementById("midStatus").textContent = d.Mid_Price_Status || "-";
+      document.getElementById("maxStatus").textContent = d.Max_Price_Status || "-";
+
+      document.getElementById("minLabel").textContent = currency(min);
+      document.getElementById("maxLabel").textContent = currency(max);
+      document.getElementById("bestRangeNote").textContent = `Best price at ${currency(best)}`;
+
+      setBar("bestProbBar", d.Best_Price_Probability);
+      setBar("currentProbBar", d.Current_Quote_Probability || d.Win_Probability );
+
+      setAnalyticsProbBar("aBestProb", "aBestProbTxt", d.Best_Price_Probability);
+      setAnalyticsProbBar("aCurrentProb", "aCurrentProbTxt", d.Current_Quote_Probability);
+      setAnalyticsProbBar("aMaxProb", "aMaxProbTxt", d.Max_Price_Probability);
+      setAnalyticsProbBar("aMidProb", "aMidProbTxt", d.Mid_Price_Probability);
+      setAnalyticsProbBar("aMinProb", "aMinProbTxt", d.Min_Price_Probability);
+
+      drawPricePositionChart([
+        { name: "Min", price: min, prob: Number(d.Min_Price_Probability || 0), color: "#0f766e" },
+        { name: "Mid", price: mid, prob: Number(d.Mid_Price_Probability || 0), color: "#b45309" },
+        { name: "Current", price: currentQuote, prob: Number(d.Current_Quote_Probability || 0), color: "#6d28d9" },
+        { name: "Best", price: best, prob: Number(d.Best_Price_Probability || 0), color: "#c81e1e" },
+        { name: "Max", price: max, prob: Number(d.Max_Price_Probability || 0), color: "#1d4ed8" }
+      ]);
+
+      const marker = max > min ? ((best - min) / (max - min)) * 100 : 50;
+      document.getElementById("rangeTrack").style.setProperty("--marker", `${Math.max(0, Math.min(100, marker))}%`);
+    }
+
+    function showMessage(text) {
+      msg.textContent = text;
+      msg.classList.remove("hidden");
+    }
+
+    function clearMessage() {
+      msg.textContent = "";
+      msg.classList.add("hidden");
+    }
+
+    async function fetchRecommendation(auto = false) {
+      clearMessage();
+      const payload = payloadFromForm();
+      if (!auto) {
+        submitBtn.disabled = true;
+        submitBtn.children[0].textContent = "Processing recommendation...";
+      }
+
+      try {
+        const res = await fetch("/price-recommendation", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          throw new Error(`Request failed (${res.status})`);
+        }
+
+        const response = await res.json();
+        if (response.status !== "success") {
+          throw new Error("API returned non-success status");
+        }
+
+        bindResponse(response, payload);
+        resultCard.classList.remove("hidden");
+      } catch (error) {
+        showMessage(error.message || "Unable to fetch recommendation");
+      } finally {
+        if (!auto) {
+          submitBtn.disabled = false;
+          submitBtn.children[0].textContent = "⚕ Get Smart Recommendation";
+        }
+      }
+    }
+
+    let autoCallTimer = null;
+    function scheduleAutoCall() {
+      clearTimeout(autoCallTimer);
+      autoCallTimer = setTimeout(() => fetchRecommendation(true), 350);
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      await fetchRecommendation(false);
+    });
+
+    quoteSlider.addEventListener("input", () => {
+      syncSliderDisplay(Number(quoteSlider.value), true);
+      scheduleAutoCall();
+    });
+
+    quoteInput.addEventListener("input", () => {
+      syncSliderDisplay(Number(quoteInput.value || 0), true);
+      scheduleAutoCall();
+    });
+
+    document.getElementById("PERUNITCOST").addEventListener("input", updateQuoteSliderBounds);
+    document.getElementById("STDINVOICEPRICE").addEventListener("input", updateQuoteSliderBounds);
+    updateQuoteSliderBounds();
+  </script>
+</body>
+</html>

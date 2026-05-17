@@ -1,0 +1,20 @@
+# probability Upper range to get the min, mid & max Price
+[pricing]
+
+min_price_probability = 0.80
+mid_price_probability = 0.60
+max_price_probability = 0.35
+
+simulation_steps = 200
+
+# The probability at which we whould classify as High winning probability and medium wining probability
+[probability_status]
+high = 0.75
+medium = 0.45
+
+# The margin is applied on the cost price cost_price + (1* margin)
+[price_margins]
+min_margin = 0.05
+max_margin = 0.40
+min_ratio = 0.45
+max_ratio = 1.1

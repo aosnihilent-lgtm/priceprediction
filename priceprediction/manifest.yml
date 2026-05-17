@@ -1,0 +1,11 @@
+applications:
+  - name: priceprediction
+    memory: 2024MB
+    disk_quota: 2024MB
+    health-check-type: http
+    health-check-http-endpoint: /
+    timeout: 580
+    buildpacks:
+      - python_buildpack
+    command: python main.py
+    random-route: true
