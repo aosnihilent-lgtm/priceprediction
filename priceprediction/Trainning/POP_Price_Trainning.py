@@ -44,9 +44,12 @@ def train_pop_models():
 
     print("✅ Data Loaded:", df.shape)
 
+    df["WINSTATUS"] = df["WINSTATUS"].astype(str).str.strip().str.upper()
+    print(df.head(10))
+    df["WINSTATUS"] = ( df["WINSTATUS"].astype(str).str.strip().str.upper().replace({ "WON": "WIN",  "LOST": "LOSS"  })  )
     train = df[df["WINSTATUS"].isin(["WIN","LOSS"])].copy()
     train["target"] = (train["WINSTATUS"] == "WIN").astype(int)
-
+    print(train[:10])
     train = structural_cleaning(train)
     
     # -----------------------------

@@ -43,7 +43,9 @@ def train_quote_models():
     conn.close()
 
     print("✅ Data Loaded:", df.shape)
-
+    df["WINSTATUS"] = df["WINSTATUS"].astype(str).str.strip().str.upper()
+    print(df.head(10))
+    df["WINSTATUS"] = ( df["WINSTATUS"].astype(str).str.strip().str.upper().replace({ "WON": "WIN",  "LOST": "LOSS"  })  )
     train = df[df["WINSTATUS"].isin(["WIN","LOSS"])].copy()
     train["target"] = (train["WINSTATUS"] == "WIN").astype(int)
 

@@ -7,7 +7,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from Trainning.Quote_Price_Trainning import train_quote_models
 from Trainning.POP_Price_Trainning import train_pop_models
-from utils.model_loader import load_model
+from utils.model_loader import load_model, load_pop_model
 from pricing.price_engine import PriceEngine
 from utils.config_loader import load_config
 
@@ -25,8 +25,10 @@ CORS(app)
 # baseline_features = joblib.load("models/baseline_features.pkl")
 
 model = load_model()
+pop_model = load_pop_model()
 config = load_config()
 engine = PriceEngine(model, config)
+pop_engine = PriceEngine(pop_model, config)
 
 # ======================================
 # HOME HTML
@@ -40,7 +42,6 @@ def home():
 # ======================================
 @app.route("/price-recommendation", methods=["POST"])
 def price_recommendation():
-
     try:
         request_json = request.get_json()
     
@@ -96,20 +97,80 @@ def price_recommendation():
             "message": str(e)
         }), 500
 
+@app.route("/pop-price-recommendation", methods=["POST"])
+def pop_price_recommendation():
+    try:
+        request_json = request.get_json()
+    
+        # Fix column name mismatch
+        if "MATGRP1" in request_json:
+            request_json["MATGROUP1"] = request_json["MATGRP1"]
+
+        # Feature Engineering (must match training)
+        request_json["log_quantity"] = np.log1p(float(request_json["QUANTITY"]))
+
+        # If you don't send VALIDFROM / VALIDTO, set default validity - not using these fields for now
+        request_json["validity_days"] = 30
+
+        # If CREATEDON not provided, use current date
+        
+        now = datetime.now()
+        request_json["created_month"] = now.month
+        request_json["created_year"] = now.year
+        request_json["CREATEDON"] = now
+
+        if not request_json:
+            return jsonify({
+                "status": "error",
+                "message": "Invalid JSON input"
+            }), 400
+
+
+        # quote = request_json.dict()
+        df = pd.DataFrame([request_json])
+        result = pop_engine.recommend_price(df)
+
+        return jsonify({
+            "status": "success",
+            "data": result
+        })
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
 # ======================================
 # TRAIN MODEL API
 # ======================================
 # new trainning model
-@app.route("/training", methods=["GET"])
-def train_models():
-
+@app.route("/training_quote", methods=["GET"])
+def quote_models():
     try:
         result_quote = train_quote_models()
-        #result_pop = train_pop_models()
-        result = result_quote #+ result_pop
+        result = result_quote
         return jsonify({
             "status": "success",
-            "message": "Model trained successfully",
+            "message": "Quote Model trained successfully",
+            "result": result
+        })
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+@app.route("/training_pop", methods=["GET"])
+def pop_models():
+
+    try:
+        result_pop = train_pop_models()
+        result = result_pop
+        return jsonify({
+            "status": "success",
+            "message": "POP Model trained successfully",
             "result": result
         })
 
